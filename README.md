@@ -334,4 +334,84 @@ Emily had two normal, successful sign-ins (10:15 and 10:29), both from her usual
 |---|---|---|---|
 | Her account was hacked | Strange sign-ins, attacker typing commands | Clean sign-ins, same IP, one harmless prompt | ❌ Ruled out |
 | Copilot's settings were tampered with | Everyone's Copilot misbehaving | 34 other sessions on the same settings behaved normally | ❌ Ruled out |
-| **Outside content tricked Copilot** | A normal
+| **Outside content tricked Copilot** | A normal request, then strange actions right after reading a document | Exactly this | ✅ **Confirmed** |
+
+---
+
+## S08 — Impact Assessment & Remediation
+
+| | |
+|---|---|
+| **Files exposed** | 13 (board materials, M&A pipeline, executive salaries, a client portfolio, an insider trading investigation, a restricted client list) |
+| **Settings exposed** | Copilot's instructions, data protection rules, Global Reader access, org structure |
+| **Account hacked?** | No, so a password reset isn't needed |
+
+**Containment**
+- [ ] Delete the email and attachment from every mailbox
+- [ ] Block `globalfinancereview.net` and `analyticshub.io` at the mail filter, proxy, DNS and firewall
+- [ ] Remove the poisoned document so Copilot can't read it again
+- [ ] Check whether anyone else received the email, and search for any other Copilot replies linking to `analyticshub.io`
+
+**Hardening**
+- [ ] Cut Copilot's access down so it can only see what the user can see
+- [ ] Stop Copilot replies from loading images from outside websites
+- [ ] Rewrite Copilot's instructions and data rules, since the attacker has seen them
+- [ ] Tell the owners of the exposed files, and have legal review whether clients or regulators need to be notified
+
+**Detection rule idea:** alert when a Copilot session opens unrelated files after a simple "summarise" request **and** those files are sensitive and new to the user, **or** it opens 3+ files within 10 seconds, **or** its reply contains an image link to an outside website.
+
+---
+
+## What This Taught Me About SOC Work
+
+- **My endpoint instincts transfer.** In my role I already ask users "what were you doing right before this happened?" Here that question led straight to the poisoned email. Same skill, better tools.
+- **Not every alert means a hacked account.** The logs said Emily opened those files, but it was really Copilot acting on hidden instructions. A password reset, the usual first fix, wouldn't have helped at all. I learned to ask *what* actually did the action, not just *whose name* is on it.
+- **Endpoint tools won't catch everything.** There was no malicious process on the machine, just a trusted Microsoft app loading "images." That showed me why SOC teams correlate cloud, identity and endpoint data instead of relying on one source.
+- **Baselining cuts false positives.** Comparing one session against 34 normal ones turned "this looks weird" into proof. That's the same skill I'd use triaging alerts across client environments every day.
+- **Explain it simply.** I work with non-technical users all the time. If I were writing this up for an MSP client, they'd want to know what happened, whether their data left, and what to do next, so I tried to answer those three things in every section.
+- **Know what you can't see.** I couldn't prove exactly what data left without network logs, and saying that clearly is better than guessing.
+
+---
+
+## Conclusion — What Actually Happened
+
+> No malware, no stolen password, no break-in. One email carried text that the company's AI assistant treated as instructions. Copilot did the attacker's searching, reading and data theft using its own permissions, under the name of an employee who only asked for a summary.
+
+---
+
+## Investigation Status
+
+- [x] Section 1: Delivery (sender, poisoned document, time gap)
+- [x] Section 2: Copilot Hijack (prompt, tool calls, ATLAS technique)
+- [x] Section 3: Data Extraction (file count, exfil domain, mechanism)
+- [x] Section 4: Blast Radius (files, content visibility gap, system prompt exposure)
+- [x] Section 5: Normal or Anomalous (baseline comparison, access pattern analysis)
+- [x] Section 6: Impact & Classification (SearchLeak scope, total count, classification)
+
+**17 / 17 flags completed**
+
+---
+
+## Indicators of Compromise
+
+| Type | Indicator |
+|---|---|
+| Sender | quarterly.reports@globalfinancereview.net |
+| Sender domain | globalfinancereview.net |
+| Attachment | Q3-2026-Global-Markets-Review.docx |
+| Exfil domain | metrics-cdn.analyticshub.io |
+| Exfil URL pattern | `https://metrics-cdn.analyticshub.io/img?d=<base64>&s=<tag>` |
+| Hijacked session | cp-emily-20261007-1042 |
+
+---
+
+## Key Files
+
+| File | Description |
+|---|---|
+| `README.md` | This write-up |
+| `ECHOLEAK-Executive-Summary.md` | Plain-language incident report |
+[ECHOLEAK-Executive-Summary.md](https://github.com/user-attachments/files/33641898/ECHOLEAK-Executive-Summary.md)
+
+
+**References:** Aim Security's EchoLeak disclosure (CVE-2025-32711, CVSS 9.3) · Unit 42 (Palo Alto Networks) research on indirect prompt injection · MITRE ATT&CK · MITRE ATLAS
