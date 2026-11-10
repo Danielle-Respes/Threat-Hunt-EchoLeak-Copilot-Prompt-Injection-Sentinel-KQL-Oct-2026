@@ -411,6 +411,9 @@ Emily had two normal, successful sign-ins (10:15 and 10:29), both from her usual
 |---|---|
 | `README.md` | This write-up |
 | `ECHOLEAK-Executive-Summary.md` | Plain-language incident report |
+|`FEEDBACK ECHOLEAK-Executive-Summary.md LOG(N)PACIFIC Suggestions for improvement` | Plain-language incident report -how to get better on the next Hunt | [FEEDBACK echoleak-debrief-danir.pdf](https://github.com/user-attachments/files/34633541/FEEDBACK.echoleak-debrief-danir.pdf)
+
+
 [ECHOLEAK-Executive-Summary.md](https://github.com/user-attachments/files/33641898/ECHOLEAK-Executive-Summary.md)
 
 
